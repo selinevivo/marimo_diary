@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🟢 몽글몽글 마리모 일지</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gamja+Flower&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #f3f9f6;
+            --main-color: #a8dfc4;
+            --point-color: #fcfade;
+            --text-color: #5a7365;
+            --white: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Gamja Flower', 'Apple SD Gothic Neo', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            padding: 20px 10px;
+            font-size: 1.1rem;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 450px;
+            background: var(--white);
+            border-radius: 25px;
+            padding: 20px;
+            box-shadow: 0 8px 20px rgba(168, 223, 196, 0.3);
+        }
+
+        /* 헤더 영역 */
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            color: var(--text-color);
+            display: flex;
+            align-content: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* 이름 수정 버튼 */
+        .rename-btn {
+            background: none;
+            border: none;
+            color: #9cb3a6;
+            font-size: 0.9rem;
+            text-decoration: underline;
+            cursor: pointer;
+            margin-top: 4px;
+            font-family: inherit;
+        }
+
+        /* 캘린더 스타일 */
+        .calendar-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 0 10px;
+        }
+
+        .calendar-nav button {
+            background: var(--main-color);
+            border: none;
+            color: white;
+            padding: 4px 14px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            text-align: center;
+        }
+
+        .weekday {
+            font-weight: bold;
+            font-size: 1rem;
+            color: #9cb3a6;
+            padding-bottom: 5px;
+        }
+
+        .day {
+            background: #f9fbf9;
+            border: 1px solid #eef5f1;
+            border-radius: 12px;
+            min-height: 58px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 2px;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .day:hover, .day.active {
+            background: var(--main-color);
+            color: white;
+            border-color: var(--main-color);
+        }
+
+        .day .marimo-mood {
+            font-size: 1.2rem;
+            margin-top: 2px;
+        }
+
+        /* 일지 작성/조회 영역 */
+        .journal-section {
+            margin-top: 25px;
+            background: #f9fbf9;
+            border-radius: 20px;
+            padding: 15px;
+            border: 2px dashed var(--main-color);
+        }
+
+        .journal-section h3 {
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+            color: var(--text-color);
+        }
+
+        .mood-select {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+
+        .mood-btn {
+            background: var(--white);
+            border: 1px solid #ddd;
+            font-size: 1.4rem;
+            padding: 3px 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .mood-btn.selected {
+            background: var(--point-color);
+            border-color: var(--main-color);
+            transform: scale(1.1);
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            border: 1px solid #e2eee7;
+            border-radius: 12px;
+            padding: 10px;
+            resize: none;
+            font-size: 1.05rem;
+            color: var(--text-color);
+            outline: none;
+            margin-bottom: 10px;
+            font-family: inherit;
+        }
+
+        textarea:focus {
+            border-color: var(--main-color);
+        }
+
+        .save-btn {
+            width: 100%;
+            background: var(--main-color);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(168, 223, 196, 0.2);
+            font-family: inherit;
+        }
+
+        .save-btn:active {
+            background: #93ceb2;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header>
+        <h1 id="appTitle">🟢 몽글몽글 마리모 일지</h1>
+        <button class="rename-btn" onclick="askMarimoName(true)">이름 다시 짓기</button>
+    </header>
+
+    <div class="calendar-nav">
+        <button id="prevMonth">이전</button>
+        <span id="calendarTitle" style="font-weight: bold; font-size: 1.3rem;"></span>
+        <button id="nextMonth">다음</button>
+    </div>
+
+    <div class="calendar-grid" id="calendarGrid">
+        <div class="weekday">일</div><div class="weekday">월</div><div class="weekday">화</div>
+        <div class="weekday">수</div><div class="weekday">목</div><div class="weekday">금</div><div class="weekday">토</div>
+    </div>
+
+    <div class="journal-section">
+        <h3 id="selectedDateText">날짜를 선택해주세요</h3>
+        
+        <div class="mood-select">
+            <span>기분:</span>
+            <button class="mood-btn" onclick="selectMood('😊')">😊</button>
+            <button class="mood-btn" onclick="selectMood('😴')">😴</button>
+            <button class="mood-btn" onclick="selectMood('🧼')">🧼</button>
+            <button class="mood-btn" onclick="selectMood('☀️')">☀️</button>
+        </div>
+
+        <textarea id="journalText" placeholder="오늘 마리모에게는 어떤 일이 있었나요?"></textarea>
+        <button class="save-btn" onclick="saveJournal()">일기 저장하기</button>
+    </div>
+</div>
+
+<script>
+    // 상태 관리 변수
+    let currentDate = new Date(); // 기본적으로 오늘 날짜 기준으로 시작
+    let selectedDateString = "";
+    let selectedMood = "";
+    let marimoName = "마리모"; 
+    
+    let journalData = JSON.parse(localStorage.getItem('marimo_journals')) || {};
+
+    // DOM 요소 변수 선언
+    let calendarTitle, calendarGrid, selectedDateText, journalText, appTitle;
+
+    // 브라우저가 화면(HTML)을 완벽하게 다 그린 뒤 실행되도록 안전장치 설정
+    window.onload = function() {
+        calendarTitle = document.getElementById('calendarTitle');
+        calendarGrid = document.getElementById('calendarGrid');
+        selectedDateText = document.getElementById('selectedDateText');
+        journalText = document.getElementById('journalText');
+        appTitle = document.getElementById('appTitle');
+
+        // 이전/다음 버튼 이벤트 연결
+        document.getElementById('prevMonth').onclick = () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        };
+        document.getElementById('nextMonth').onclick = () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        };
+
+        // 이름 및 캘린더 초기화 순차 실행
+        checkMarimoName();
+        initCalendar();
+    };
+
+    function checkMarimoName() {
+        const savedName = localStorage.getItem('marimo_name');
+        if (savedName) {
+            marimoName = savedName;
+            updateNameUI();
+        } else {
+            askMarimoName(false);
+        }
+    }
+
+    function askMarimoName(isRename = false) {
+        const msg = isRename ? "새로운 이름을 입력해주세요! ✨" : "환영합니다! 🟢\n키우고 계신 마리모의 이름을 입력해주세요:";
+        const nameInput = prompt(msg, marimoName);
+        
+        if (nameInput && nameInput.trim() !== "") {
+            marimoName = nameInput.trim();
+            localStorage.setItem('marimo_name', marimoName);
+            updateNameUI();
+            
+            // 이름 재설정 시 하단 상세 영역 텍스트도 바로 갱신
+            if(isRename && selectedDateString) {
+                const parts = selectedDateString.split('-');
+                selectedDateText.innerText = `${parseInt(parts[1])}월 ${parseInt(parts[2])}일의 ${marimoName}`;
+            }
+        }
+    }
+
+    function updateNameUI() {
+        if(appTitle) appTitle.innerText = `🟢 몽글몽글 ${marimoName} 일지`;
+        if(journalText) journalText.placeholder = `오늘 ${marimoName}에게는 어떤 일이 있었나요? 물을 갈아주었거나 둥둥 떠올랐는지 기록해보세요!`;
+    }
+
+    function initCalendar() {
+        renderCalendar();
+        // 실행 시 자동으로 '오늘' 날짜 선택 처리
+        const today = new Date();
+        selectDate(today.getFullYear(), today.getMonth(), today.getDate());
+    }
+
+    function renderCalendar() {
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+
+        calendarTitle.innerText = `${year}년 ${month + 1}월`;
+
+        // 기존 생성되었던 날짜 칸 지우기
+        const dayElements = calendarGrid.querySelectorAll('.day');
+        dayElements.forEach(el => el.remove());
+
+        const firstDayIndex = new Date(year, month, 1).getDay();
+        const lastDate = new Date(year, month + 1, 0).getDate();
+
+        // 이번 달 시작 전 빈칸 메우기
+        for (let i = 0; i < firstDayIndex; i++) {
+            const emptyDiv = document.createElement('div');
+            calendarGrid.appendChild(emptyDiv);
+        }
+
+        // 이번 달 날짜 칸 생성
+        for (let date = 1; date <= lastDate; date++) {
+            const dayDiv = document.createElement('div');
+            dayDiv.classList.add('day');
+            
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
+            dayDiv.dataset.date = dateStr;
+
+            const dateNum = document.createElement('span');
+            dateNum.innerText = date;
+            dayDiv.appendChild(dateNum);
+
+            const moodSpan = document.createElement('span');
+            moodSpan.classList.add('marimo-mood');
+            if (journalData[dateStr] && journalData[dateStr].mood) {
+                moodSpan.innerText = journalData[dateStr].mood;
+            }
+            dayDiv.appendChild(moodSpan);
+
+            dayDiv.addEventListener('click', () => selectDate(year, month, date));
+
+            if (dateStr === selectedDateString) {
+                dayDiv.classList.add('active');
+            }
+
+            calendarGrid.appendChild(dayDiv);
+        }
+    }
+
+    function selectDate(year, month, date) {
+        selectedDateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
+        
+        document.querySelectorAll('.day').forEach(el => {
+            el.classList.remove('active');
+            if(el.dataset.date === selectedDateString) el.classList.add('active');
+        });
+
+        selectedDateText.innerText = `${month + 1}월 ${date}일의 ${marimoName}`;
+
+        if (journalData[selectedDateString]) {
+            journalText.value = journalData[selectedDateString].text || "";
+            setMoodActive(journalData[selectedDateString].mood || "");
+        } else {
+            journalText.value = "";
+            setMoodActive("");
+        }
+    }
+
+    function selectMood(mood) {
+        selectedMood = mood;
+        setMoodActive(mood);
+    }
+
+    function setMoodActive(mood) {
+        selectedMood = mood;
+        document.querySelectorAll('.mood-btn').forEach(btn => {
+            if (btn.innerText === mood) {
+                btn.classList.add('selected');
+            } else {
+                btn.classList.remove('selected');
+            }
+        });
+    }
+
+    function saveJournal() {
+        if (!selectedDateString) {
+            alert("날짜를 먼저 선택해주세요!");
+            return;
+        }
+
+        journalData[selectedDateString] = {
+            mood: selectedMood,
+            text: journalText.value
+        };
+
+        localStorage.setItem('marimo_journals', JSON.stringify(journalData));
+        renderCalendar();
+        alert(`${marimoName}의 일기가 저장되었습니다! 🟢`);
+    }
+</script>
+
+</body>
+</html>
